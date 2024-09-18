@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torchvision import transforms
 
 class FocalLoss(nn.Module):
     def __init__(self, alpha=0.25, gamma=2, reduction='mean'):
@@ -76,3 +77,29 @@ class TverskyLoss(nn.Module):
         loss = 1 - Tversky.mean()
 
         return loss
+    
+model.head = nn.Sequential(
+    nn.Dropout(p=0.5),
+    nn.Linear(model.head.in_features, 2)
+)
+
+
+
+
+    
+train_transform = transforms.Compose([
+    transforms.RandomHorizontalFlip(),
+    transforms.RandomRotation(degrees=[0, 90, 180, 270]),
+    transforms.RandomApply([transforms.GaussianBlur(kernel_size=3, sigma=(0.3, 0.8))], p=0.3),
+    transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
+    transforms.ToTensor(),
+    #随机调整图像的色彩属性，包括以下方面：
+    #亮度（brightness）：在原始亮度的基础上随机调整，范围为 ±20%。
+    #对比度（contrast）：在原始对比度的基础上随机调整，范围为 ±20%。
+    #饱和度（saturation）：在原始饱和度的基础上随机调整，范围为 ±20%。
+    #色调（hue）：在原始色调的基础上随机调整，范围为 ±0.1。
+    #kernel_size 决定了高斯模糊的影响范围：越大，模糊程度越强。
+    #sigma 决定了模糊的强度：越大，模糊程度越强。
+    #在小尺寸图像和细节敏感的任务中，应选择较小的 kernel_size 和 sigma，以防止过度模糊导致细节丢失。
+    #建议您在实际训练中，通过实验调整 kernel_size 和 sigma 的值，找到最适合您任务的参数组合。  
+])
